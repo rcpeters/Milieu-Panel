@@ -1,6 +1,6 @@
 # Milieu Panel
 
-Matter-over-Wi-Fi multi-button RGB controller for Home Assistant, built on the **Seeed Studio XIAO ESP32C6** supporting **1 to 8 DFRobot Gravity I2C RGB LED Button Modules (DFR0991)**.
+Matter-over-Wi-Fi multi-button RGB controller for Home Assistant, built on the [Seeed Studio XIAO ESP32C6](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html?srsltid=AYCX9vJlRaSb-U1HvQprHTlOPNjOPJUSlCkTo8RSpt2fEll0ksC4HNig) supporting **1 to 8 [DFRobot Gravity I2C RGB LED Button Modules (DFR0991)**](https://www.dfrobot.com/product-2634.html?srsltid=AYCX9vJISmFw0WdmE3JjDOWw4sSpV45JZOlOm4r8jJHsSLDiXGs4eMlx).
 
 Connected buttons are auto-discovered over I2C (`0x23`–`0x2A`) and exposed to Home Assistant as two Matter endpoints per button (up to 16 endpoints total):
 - **Matter Generic Switch (`event` entity):** Emits `initial_press`, `short_release`, `long_press`, and `long_release` events so Home Assistant knows both the press type and button hold duration.
