@@ -55,22 +55,28 @@ Give each button module a unique address using the 3-bit DIP switch (`A2`, `A1`,
 
 ---
 
-## Firmware Build & Flash
+## Firmware Build & Flash (Arduino IDE)
 
-1. **Build the firmware (PlatformIO):**
-   ```bash
-   pio run
-   ```
+1. **Install the ESP32 Board Package (v3.x+):**
+   * In Arduino IDE, open **File → Preferences** and add the official Espressif Boards Manager URL if not already present:
+     ```text
+     https://espressif.github.io/arduino-esp32/package_esp32_index.json
+     ```
+   * Open **Tools → Board → Boards Manager**, search for **`esp32`** by **Espressif Systems**, and install **version 3.x or newer** (required for `ESP32-C6` and `Matter`).
 
-2. **Flash the Seeed Studio XIAO ESP32C6:**
-   ```bash
-   pio run -e seeed_xiao_esp32c6 -t upload
-   ```
+2. **Install the `DFRobot_RGBButton` Library:**
+   * Open **Tools → Manage Libraries...** (Library Manager), search for **`DFRobot_RGBButton`**, and click **Install** (or download and install [DFRobot_RGBButton from GitHub](https://github.com/DFRobot/DFRobot_RGBButton) via **Sketch → Include Library → Add .ZIP Library...**).
 
-3. **Monitor Serial logs (115200 baud):**
-   ```bash
-   pio device monitor
-   ```
+3. **Open the Sketch & Configure Board Settings:**
+   * Open [`Milieu-Panel.ino`](Milieu-Panel.ino) in Arduino IDE and configure the **Tools** menu as follows:
+     * **Board:** `XIAO_ESP32C6` (`Tools → Board → esp32 → XIAO_ESP32C6`)
+     * **Port:** Select your XIAO ESP32C6 USB serial port
+     * **USB CDC On Boot:** `"Enabled"` (required for `Serial` logs over USB-C)
+     * **Partition Scheme:** `"Huge APP (3MB No OTA/1MB SPIFFS)"` (required so the Matter stack fits in flash)
+
+4. **Upload & Monitor:**
+   * Click **Upload** (`Ctrl+U` / `Cmd+U`) to build and flash the firmware.
+   * Open **Tools → Serial Monitor** and set baud rate to **`115200`** to view discovered button addresses and the Matter pairing code.
 
 ---
 

@@ -87,13 +87,13 @@ Home Assistant controls each button's **On/Off** state and **RGB color** via `Ma
 | **Factory reset triggered (`BOOT` held 5 s)** | Flash **Purple** 3 times at `40%` brightness (`PWM 102`, 150 ms on / 150 ms off) before rebooting |
 
 ## Software & Build
-* **Toolchain:** PlatformIO, Arduino-ESP32 v3.x+ (`seeed_xiao_esp32c6`), `huge_app.csv` partition table.
-* **Libraries:** Built-in `Matter`, `WiFi`, and `Preferences` (NVS), plus `DFRobot_RGBButton`.
-* **Configuration:** Pin definitions (`GPIO22`/`GPIO23` I2C at `100 kHz`, `GPIO3`/`GPIO14` RF antenna switch), I2C address range (`0x23`–`0x2A`), brightness constants (`LED_PWM_IDLE = 26`, `LED_PWM_PRESSED = 102`), and timing constants live in `platformio.ini` / code.
-* **Serial:** USB CDC on boot enabled (`115200` baud); prints discovered I2C button addresses, Matter manual pairing code, and QR code URL.
+* **Toolchain:** Arduino IDE 2.x, Espressif `esp32` Arduino Core v3.x+ (`XIAO_ESP32C6` board), `Huge APP (3MB No OTA/1MB SPIFFS)` partition scheme (`huge_app.csv`).
+* **Libraries:** Built-in `Matter`, `WiFi`, `Wire`, and `Preferences` (NVS), plus `DFRobot_RGBButton`.
+* **Configuration:** Pin definitions (`GPIO22`/`GPIO23` I2C at `100 kHz`, `GPIO3`/`GPIO14` RF antenna switch), I2C address range (`0x23`–`0x2A`), brightness constants (`LED_PWM_IDLE = 26`, `LED_PWM_PRESSED = 102`), and timing constants live in [`config.h`](config.h).
+* **Serial:** `USB CDC On Boot: "Enabled"` (`115200` baud); prints discovered I2C button addresses, Matter manual pairing code, and QR code URL.
 
 ## Acceptance Criteria
-- [ ] Firmware builds and flashes for `seeed_xiao_esp32c6` via PlatformIO with no `.env` file needed, initializing the RF switch (`GPIO3 = LOW`, `GPIO14 = LOW`) and `100 kHz` I2C bus.
+- [ ] Firmware builds and flashes for `XIAO_ESP32C6` in Arduino IDE with no `.env` file needed, initializing the RF switch (`GPIO3 = LOW`, `GPIO14 = LOW`) and `100 kHz` I2C bus.
 - [ ] Uncommissioned boot scans `0x23`–`0x2A` (retrying every 5 s if 0 buttons are found), saves the discovered button mask in NVS, blinks connected buttons blue (`10%`) at 1 Hz, and prints the Matter QR code URL and manual pairing code on Serial.
 - [ ] Commissions into Home Assistant over Matter (BLE + Wi-Fi) with 1 `event` entity (`FEATURE_MOMENTARY | FEATURE_RELEASE | FEATURE_LONG_PRESS`) and 1 RGB `light` entity per discovered button (supporting 1 to 8 buttons).
 - [ ] Holding the onboard `BOOT` button (`GPIO9`) for 5 s flashes all connected buttons purple 3 times (`40%`), clears the NVS button mask, decommissions the Matter node, and re-scans on reboot.
