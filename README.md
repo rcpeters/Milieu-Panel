@@ -24,8 +24,8 @@ All button modules (1 to 8) share the same 4-wire I2C bus in parallel (`100 kHz`
 
 | Signal | Seeed Studio XIAO ESP32C6 | Each Button Module (`0x23`–`0x2A`) |
 |--------|---------------------------|------------------------------------|
-| SDA    | `D4` (`GPIO22`)           | `D` (SDA)                          |
-| SCL    | `D5` (`GPIO23`)           | `C` (SCL)                          |
+| SDA    | `D4` (`GPIO22`)           | `D` (SDA)                          |  Green
+| SCL    | `D5` (`GPIO23`)           | `C` (SCL)                          |  Blue
 | 3.3V   | `3V3`                     | `+` (VCC)                          |
 | GND    | `GND`                     | `-` (GND)                          |
 
