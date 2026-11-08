@@ -147,6 +147,29 @@ static constexpr const char *kButtonLabels[MAX_BUTTONS] = {
     "Button 5", "Button 6", "Button 7", "Button 8",
 };
 
+static constexpr const char *kLightLabels[MAX_BUTTONS] = {
+    "Button 1 Light", "Button 2 Light", "Button 3 Light", "Button 4 Light",
+    "Button 5 Light", "Button 6 Light", "Button 7 Light", "Button 8 Light",
+};
+
+static void setEndpointLabel(MatterEndPoint &ep, const char *label) {
+  esp_matter::endpoint_t *endpoint = esp_matter::endpoint::get(esp_matter::node::get(), ep.getEndPointId());
+  if (!endpoint) {
+    return;
+  }
+  esp_matter::endpoint::bridged_node::config_t cfg;
+  if (esp_matter::endpoint::bridged_node::add(endpoint, &cfg) == ESP_OK) {
+    esp_matter::cluster_t *cluster =
+        esp_matter::cluster::get(endpoint, chip::app::Clusters::BridgedDeviceBasicInformation::Id);
+    if (cluster) {
+      char buf[32];
+      strncpy(buf, label, sizeof(buf) - 1);
+      buf[sizeof(buf) - 1] = '\0';
+      esp_matter::cluster::bridged_device_basic_information::attribute::create_node_label(cluster, buf, strlen(buf));
+    }
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Button Polling & LED State Machine
 // -----------------------------------------------------------------------------
@@ -331,6 +354,7 @@ void setup() {
                          MatterGenericSwitch::FEATURE_RELEASE |
                          MatterGenericSwitch::FEATURE_LONG_PRESS;
 
+  // Pass 1: Register all Switches first so their Endpoint IDs are 1..N
   for (uint8_t bit = 0; bit < MAX_BUTTONS; ++bit) {
     if (!(g_buttonMask & (1U << bit))) {
       continue;
@@ -345,11 +369,17 @@ void setup() {
     b.sw.begin(switchFlags);
     b.sw.setTagList({{MatterTags::Number::NS, b.number},
                      MatterTags::Switches::createCustomTag(kButtonLabels[idx])});
+    setEndpointLabel(b.sw, kButtonLabels[idx]);
+  }
 
+  // Pass 2: Register all Lights second so their Endpoint IDs are (N+1)..2N
+  for (uint8_t idx = 0; idx < g_buttonCount; ++idx) {
+    ButtonSlot &b = g_buttons[idx];
     b.light.begin(false, {0, 0, 254});
     b.light.setTagList({{MatterTags::Number::NS, b.number},
-                        MatterTags::Switches::createCustomTag(kButtonLabels[idx])});
+                        MatterTags::Switches::createCustomTag(kLightLabels[idx])});
     b.light.onChange(kLightCbs[idx]);
+    setEndpointLabel(b.light, kLightLabels[idx]);
 
     Serial.printf("[BOOT] Button %u @ 0x%02X (%s) -> Switch EP %u, Light EP %u\n",
                   b.number, b.addr, b.connected ? "OK" : "MISSING",
