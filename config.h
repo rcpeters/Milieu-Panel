@@ -22,10 +22,9 @@ constexpr uint8_t BUTTON_ADDR_MIN = 0x23;
 constexpr uint8_t BUTTON_ADDR_MAX = 0x2A;
 constexpr uint8_t MAX_BUTTONS = BUTTON_ADDR_MAX - BUTTON_ADDR_MIN + 1; // 8
 
-// 3.3V Rail Power-Safe Brightness Levels (PWM 0..255)
+// 3.3V Rail Power-Safe Brightness Level (PWM 0..255)
 constexpr uint8_t LED_PWM_OFF = 0;
-constexpr uint8_t LED_PWM_IDLE = 26;     // 10% brightness
-constexpr uint8_t LED_PWM_PRESSED = 102; // 40% brightness
+constexpr uint8_t LED_PWM_ON = 26; // 10% fixed brightness
 
 // Timing Constants (ms)
 constexpr uint32_t BUTTON_POLL_INTERVAL_MS = 20;

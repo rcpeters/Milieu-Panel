@@ -92,7 +92,7 @@ static void checkFactoryReset(uint32_t now) {
       Serial.println("\n[RESET] Factory reset triggered -> Flashing Purple 3x...");
       for (uint8_t c = 0; c < FACTORY_RESET_BLINK_COUNT; ++c) {
         for (uint8_t a = BUTTON_ADDR_MIN; a <= BUTTON_ADDR_MAX; ++a) {
-          setButtonRgb(a, LED_PWM_PRESSED, 0, LED_PWM_PRESSED);
+          setButtonRgb(a, LED_PWM_ON, 0, LED_PWM_ON);
         }
         delay(FACTORY_RESET_BLINK_MS);
         for (uint8_t a = BUTTON_ADDR_MIN; a <= BUTTON_ADDR_MAX; ++a) {
@@ -275,9 +275,9 @@ static void updateLeds(NodeState state, uint32_t now) {
 
     uint8_t r = 0, g = 0, bl = 0;
     if (state == NodeState::UNCOMMISSIONED) {
-      bl = blinkOn ? LED_PWM_IDLE : LED_PWM_OFF;
+      bl = blinkOn ? LED_PWM_ON : LED_PWM_OFF;
     } else if (state == NodeState::OFFLINE) {
-      r = blinkOn ? LED_PWM_IDLE : LED_PWM_OFF;
+      r = blinkOn ? LED_PWM_ON : LED_PWM_OFF;
     } else {
       portENTER_CRITICAL(&g_mux);
       bool synced = b.haSynced;
@@ -285,13 +285,12 @@ static void updateLeds(NodeState state, uint32_t now) {
       espRgbColor_t c = b.rgb;
       portEXIT_CRITICAL(&g_mux);
 
-      uint8_t pwm = b.pressed ? LED_PWM_PRESSED : LED_PWM_IDLE;
       if (synced && on) {
-        r = scalePwm(c.r, pwm);
-        g = scalePwm(c.g, pwm);
-        bl = scalePwm(c.b, pwm);
-      } else if (b.pressed || !synced) {
-        r = g = bl = pwm; // White (10% waiting for HA sync, or 40% while pressed)
+        r = scalePwm(c.r, LED_PWM_ON);
+        g = scalePwm(c.g, LED_PWM_ON);
+        bl = scalePwm(c.b, LED_PWM_ON);
+      } else if (!synced) {
+        r = g = bl = LED_PWM_ON; // White (10% waiting for HA sync)
       }
     }
 

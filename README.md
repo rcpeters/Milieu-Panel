@@ -4,7 +4,7 @@ Matter-over-Wi-Fi multi-button RGB controller for Home Assistant, built on the [
 
 Connected buttons are auto-discovered over I2C (`0x23`–`0x2A`) and exposed to Home Assistant as two labeled Matter endpoints per button:
 - **`Button 1`–`Button 8` (`event` entity):** Emits `initial_press`, `short_release`, `long_press`, and `long_release` events.
-- **`Button 1 Light`–`Button 8 Light` (`light` entity):** Controls each button's On/Off state and RGB color. Brightness is fixed in firmware (**`10%` idle**, **`40%` while pressed**) to stay within the XIAO ESP32C6 `3V3` power budget.
+- **`Button 1 Light`–`Button 8 Light` (`light` entity):** Controls each button's On/Off state and RGB color. Brightness is fixed in firmware at **`10%`** (`PWM 26`) to stay within the XIAO ESP32C6 `3V3` power budget.
 
 See [REQUIREMENTS.md](REQUIREMENTS.md) for the full specification and power calculations.
 
@@ -52,5 +52,5 @@ Set each button to a unique I2C address before powering on:
    - **Blinking Blue (`10%`):** Uncommissioned / ready to pair
    - **Blinking Red (`10%`):** Wi-Fi or Matter disconnected
    - **Solid White (`10%`):** Online, waiting for initial color sync from Home Assistant (reports `Off` to Matter on boot so HA automations can trigger on reconnect)
-   - **Solid RGB (`10%` idle / `40%` pressed):** Online and synced with Home Assistant
+   - **Solid RGB (`10%`):** Online and synced with Home Assistant
 3. **Add/Remove Buttons (Factory Reset):** Hold the XIAO's onboard **`BOOT` button (`GPIO9`) for 5 seconds** until all buttons flash **Purple 3x** (or remove the device in Home Assistant and reboot). The board will clear its saved button mask and re-scan the I2C bus.

@@ -23,12 +23,11 @@
 ## 3.3V Power Budget & Brightness Limits
 * **XIAO ESP32C6 `3V3` Rail:** `700 mA` LDO max minus `354 mA` ESP32-C6 peak Wi-Fi TX = `346 mA` peak headroom (`250 mA` recommended continuous peripheral budget; `200 mA` conservative).
 * **Per-Button Draw (`DFR0991` Full White):** `~2 mA` MCU (`16 mA` for 8 buttons) + up to `60 mA` worst-case (`~35 mA` typical at 3.3V) LED current at 100% white.
-* **Firmware Fixed Brightness:** Brightness is controlled locally (`hsv.v` from Matter is ignored, always converting color at full value `254` and scaling in firmware) so all 8 buttons in full white stay within the `3V3` budget:
+* **Firmware Fixed Brightness (`10%` / `PWM 26`):** Brightness is fixed locally (`hsv.v` from Matter is ignored, always converting color at full value `254` and scaling to `10%` in firmware) so all 8 buttons in full white stay well within the `3V3` budget:
 
 | Mode / Budget Tier | Brightness (`PWM`) | Per-Button LED (White) | 8-Button Total (incl. `16 mA` MCUs) |
 |--------------------|--------------------|------------------------|-------------------------------------|
-| **Idle (Firmware)** | **`10%` (`PWM 26`)** | `6.0 mA` max / `3.5 mA` typ | **`64 mA` max / `44 mA` typ** |
-| **Pressed (Firmware)** | **`40%` (`PWM 102`)** | `24.0 mA` max / `14.0 mA` typ | **`208 mA` max / `128 mA` typ** |
+| **Active (Firmware)** | **`10%` (`PWM 26`)** | `6.0 mA` max / `3.5 mA` typ | **`64 mA` max / `44 mA` typ** |
 | **Recommended Cap** | `48%` (`PWM 124`) | `29.25 mA` max | `250 mA` |
 | **Hardware Limit** | `68%` (`PWM 175`) | `41.25 mA` max | `346 mA` |
 
@@ -36,7 +35,7 @@
 * **Uncommissioned I2C scan:** At boot, if uncommissioned (or no mask is saved in NVS namespace `"milieu"`), the firmware scans `0x23`–`0x2A`, retrying every `5 s` until ≥ 1 button responds. The discovered 8-bit `btn_mask` is saved to NVS.
 * **Locked while commissioned:** Once commissioned (`commissioned = true` in NVS), the firmware loads `btn_mask` from NVS at boot to keep Matter endpoint IDs fixed. If the device was removed from the Matter fabric remotely (`g_nvsCommissioned && !Matter.isDeviceCommissioned()`), it clears NVS and restarts to re-scan.
 * **Hot-plug recovery:** If a paired button disconnects from I2C at runtime, the firmware marks it disconnected without blocking other buttons and probes it every `5 s` to reconnect and restore its LED state.
-* **Factory reset (`5 s` `BOOT` hold):** Holding `BOOT` (`GPIO9`) for `5 s` flashes all connected buttons **Purple 3x** (`40%` brightness, `150 ms` on/off), clears NVS, calls `Matter.decommission()`, and restarts.
+* **Factory reset (`5 s` `BOOT` hold):** Holding `BOOT` (`GPIO9`) for `5 s` flashes all connected buttons **Purple 3x** (`10%` brightness, `150 ms` on/off), clears NVS, calls `Matter.decommission()`, and restarts.
 
 ## Matter Node & Endpoints
 * **Node Metadata:** Vendor `"Make Rob Make"`, Product/Device Name `"Milieu Panel"`.
@@ -63,10 +62,9 @@ Each `MatterColorLight` starts `Off` with HSV `{0, 0, 254}` (White). When Home A
 | **Uncommissioned (pairing)** | Blink **Blue** at `10%` (`PWM 26`), `1 Hz` (`500 ms` on/off) |
 | **Commissioned, Wi-Fi/Matter offline** | Blink **Red** at `10%` (`PWM 26`), `1 Hz` (`500 ms` on/off) |
 | **Online, waiting for HA sync (`!haSynced`)** | Solid **White** at `10%` (`PWM 26`) until first HA light command |
-| **Online, idle (`isOn = true`)** | Solid **HA RGB color** at `10%` (`PWM 26`) |
-| **Online, idle (`isOn = false` after sync)** | **Off (`PWM 0`)** |
-| **Online, button held down** | Boosts to **`40%` (`PWM 102`)** of active HA RGB color (or **`40%` White** if `Off` / `!haSynced`), returning to `10%` or `Off` on release |
-| **Factory reset (`BOOT` held `5 s`)** | Flash **Purple** 3x at `40%` (`PWM 102`, `150 ms` on/off) |
+| **Online (`isOn = true`)** | Solid **HA RGB color** at `10%` (`PWM 26`) |
+| **Online (`isOn = false` after sync)** | **Off (`PWM 0`)** |
+| **Factory reset (`BOOT` held `5 s`)** | Flash **Purple** 3x at `10%` (`PWM 26`, `150 ms` on/off) |
 
 ## Software & Build
 * **Toolchain:** Arduino IDE 2.x, Espressif `esp32` core v3.x+ (`XIAO_ESP32C6`), Partition Scheme `Huge APP (3MB No OTA/1MB SPIFFS)`, `USB CDC On Boot: "Enabled"` (`115200` baud).
@@ -79,5 +77,5 @@ Each `MatterColorLight` starts `Off` with HSV `{0, 0, 254}` (White). When Home A
 - [x] Registers Switches on `EP 1..N` (`"Button i"`) and Lights on `EP N+1..2N` (`"Button i Light"`) with `BridgedDeviceBasicInformation` labels and semantic tags, under Vendor `"Make Rob Make"` / Product `"Milieu Panel"`.
 - [x] Automatically clears saved NVS mask and re-scans if remotely decommissioned from the Matter fabric, or when `BOOT` (`GPIO9`) is held for `5 s` (flashing purple 3x).
 - [x] Emits `InitialPress`, `ShortRelease`, `LongPress`, and `LongRelease` switch events.
-- [x] Displays `10%` White on boot (while reporting `Off` to Matter for HA reconnect sync), shows HA RGB colors at `10%` idle (ignoring Matter brightness slider), and boosts to `40%` while pressed.
+- [x] Displays `10%` White on boot (while reporting `Off` to Matter for HA reconnect sync) and shows HA RGB colors at a fixed `10%` brightness (ignoring the Matter brightness slider).
 - [x] Blinks red (`10%`) when offline and auto-recovers hot-plugged I2C buttons every `5 s`.
