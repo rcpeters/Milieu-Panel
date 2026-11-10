@@ -41,6 +41,11 @@ constexpr const char *NVS_NAMESPACE = "milieu";
 constexpr const char *NVS_KEY_BTN_MASK = "btn_mask";
 constexpr const char *NVS_KEY_COMMISSIONED = "commissioned";
 
+// Temporary Commissioning SoftAP & Captive Portal (active only while uncommissioned)
+constexpr const char *SETUP_AP_SSID = "Milieu-Panel-Setup";
+constexpr uint8_t SETUP_DNS_PORT = 53;
+constexpr uint16_t SETUP_HTTP_PORT = 80;
+
 enum class NodeState : uint8_t { UNCOMMISSIONED, OFFLINE, ONLINE };
 
 struct ButtonSlot {

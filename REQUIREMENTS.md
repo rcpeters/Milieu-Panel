@@ -68,12 +68,27 @@ Each `MatterColorLight` starts `Off` with HSV `{0, 0, 254}` (White). When Home A
 
 ## Software & Build
 * **Toolchain:** Arduino IDE 2.x, Espressif `esp32` core v3.x+ (`XIAO_ESP32C6`), Partition Scheme `Huge APP (3MB No OTA/1MB SPIFFS)`, `USB CDC On Boot: "Enabled"` (`115200` baud).
-* **Libraries:** Built-in `Matter`, `WiFi`, `Wire`, `Preferences`, plus `DFRobot_RGBButton`.
-* **Files:** [`Milieu-Panel.ino`](Milieu-Panel.ino) (application logic) and [`config.h`](config.h) (pins, I2C addresses, PWM levels, timing, and `ButtonSlot` state).
+* **Libraries:** Built-in `Matter`, `WiFi`, `WebServer`, `DNSServer`, `Wire`, `Preferences`, plus `DFRobot_RGBButton`.
+* **Files:** [`Milieu-Panel.ino`](Milieu-Panel.ino) (application logic) and [`config.h`](config.h) (pins, I2C addresses, PWM levels, timing, SoftAP settings, and `ButtonSlot` state).
+
+## Temporary Commissioning Wi-Fi Portal & Offline QR Code Page
+
+When the panel is **uncommissioned**, the ESP32-C6 broadcasts an open temporary Wi-Fi SoftAP alongside BLE Matter advertising (`WIFI_MODE_APSTA` coexistence mode) so the user can view the Matter **QR Code** and **Manual Pairing Code** without needing a USB Serial connection:
+1. **Temporary SoftAP Lifecycle:**
+   * **Start condition:** Started automatically at boot only when `!Matter.isDeviceCommissioned()` (after `Matter.begin()` initializes the STA interface).
+   * **SSID:** `"Milieu-Panel-Setup"` (open network, default IP `192.168.4.1`).
+   * **Coexistence (`WIFI_MODE_APSTA`):** Uses ESP-IDF `esp_netif` / `esp_wifi` directly to keep the Matter STA interface active so the Matter `NetworkCommissioning` cluster can scan and join the user's home Wi-Fi network over BLE during commissioning.
+   * **Automatic teardown:** Immediately stops the HTTP server, DNS server, and SoftAP (`esp_wifi_set_mode(WIFI_MODE_STA)`) once `Matter.isDeviceCommissioned()` becomes `true`.
+2. **Captive Portal & Web Server (`http://192.168.4.1`):**
+   * Runs built-in `DNSServer` (port `53`, redirecting all DNS queries to `192.168.4.1`) and `WebServer` (port `80`) so connecting on a phone, tablet, or laptop automatically opens (or resolves any URL to) the onboarding page.
+   * Serves a single self-contained HTML/CSS/JS page from flash (`PROGMEM`) with **zero external internet dependencies**.
+3. **Offline JavaScript QR Code & Onboarding UI:**
+   * Extracts the raw Matter QR payload string (`MT:...`) from `Matter.getOnboardingQRCodeUrl()` and injects it with `Matter.getManualPairingCode()` and the discovered button count/addresses.
+   * Includes an embedded, dependency-free JavaScript QR encoder (`makeQrSvg`) that renders the `MT:...` payload to an inline `<svg>` QR code directly in the browser, alongside a one-tap **Copy Manual Code** button and discovered hardware summary.
 
 ## Acceptance Criteria
 - [x] Builds for `XIAO_ESP32C6` (`Huge APP`), initializes RF switch (`GPIO3 = LOW`, `GPIO14 = LOW`) and `100 kHz` I2C with `50 ms` timeout.
-- [x] Scans `0x23`–`0x2A` when uncommissioned (retrying every `5 s` if empty), saves `btn_mask` to NVS, blinks blue (`10%`), and prints Matter pairing details on Serial.
+- [x] Scans `0x23`–`0x2A` when uncommissioned (retrying every `5 s` if empty), saves `btn_mask` to NVS, blinks blue (`10%`), prints Matter pairing details on Serial, and hosts the `"Milieu-Panel-Setup"` (`192.168.4.1`) offline QR code captive portal until commissioned.
 - [x] Registers Switches on `EP 1..N` (`"Button i"`) and Lights on `EP N+1..2N` (`"Button i Light"`) with `BridgedDeviceBasicInformation` labels and semantic tags, under Vendor `"Make Rob Make"` / Product `"Milieu Panel"`.
 - [x] Automatically clears saved NVS mask and re-scans if remotely decommissioned from the Matter fabric, or when `BOOT` (`GPIO9`) is held for `5 s` (flashing purple 3x).
 - [x] Emits `InitialPress`, `ShortRelease`, `LongPress`, and `LongRelease` switch events.

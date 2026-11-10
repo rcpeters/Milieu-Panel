@@ -47,7 +47,10 @@ Set each button to a unique I2C address before powering on:
 
 ## Commissioning & Operation
 
-1. **Pair with Home Assistant:** On an uncommissioned boot, connected buttons blink **Blue (`10%`)** and Serial Monitor prints the **Manual Pairing Code** and **QR Code URL**. In the Home Assistant Companion App, go to **Settings → Devices & services → Matter → Add device** to pair.
+1. **Pair with Home Assistant:** On an uncommissioned boot, connected buttons blink **Blue (`10%`)**:
+   - **Via Temporary Wi-Fi Portal (no USB Serial needed):** Connect a phone or laptop to the **`Milieu-Panel-Setup`** Wi-Fi network and open **`http://192.168.4.1`** (or use the captive portal popup) to view the scannable **Matter QR Code**, one-tap **Manual Pairing Code**, and discovered buttons. The SoftAP shuts down automatically as soon as commissioning completes.
+   - **Via USB Serial Monitor (`115200` baud):** Prints the **Manual Pairing Code**, **QR Payload (`MT:...`)**, and **QR Code URL**.
+   - In the Home Assistant Companion App, go to **Settings → Devices & services → Matter → Add device** to pair.
 2. **LED Status Reference:**
    - **Blinking Blue (`10%`):** Uncommissioned / ready to pair
    - **Blinking Red (`10%`):** Wi-Fi or Matter disconnected
