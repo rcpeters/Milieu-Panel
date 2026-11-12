@@ -356,7 +356,10 @@ static void startSetupPortal() {
   if (esp_netif_get_handle_from_ifkey("WIFI_AP_DEF") == nullptr) {
     esp_netif_create_default_wifi_ap();
   }
-  esp_wifi_set_mode(WIFI_MODE_APSTA);
+  esp_err_t errMode = esp_wifi_set_mode(WIFI_MODE_APSTA);
+  if (errMode != ESP_OK) {
+    Serial.printf("[PORTAL] esp_wifi_set_mode failed: %s\n", esp_err_to_name(errMode));
+  }
 
   wifi_config_t apCfg = {};
   strncpy(reinterpret_cast<char *>(apCfg.ap.ssid), SETUP_AP_SSID, sizeof(apCfg.ap.ssid) - 1);
@@ -365,7 +368,15 @@ static void startSetupPortal() {
   apCfg.ap.authmode = WIFI_AUTH_OPEN;
   apCfg.ap.max_connection = 4;
   apCfg.ap.beacon_interval = 100;
-  esp_wifi_set_config(WIFI_IF_AP, &apCfg);
+  esp_err_t errCfg = esp_wifi_set_config(WIFI_IF_AP, &apCfg);
+  if (errCfg != ESP_OK) {
+    Serial.printf("[PORTAL] esp_wifi_set_config failed: %s\n", esp_err_to_name(errCfg));
+  }
+
+  esp_err_t errStart = esp_wifi_start();
+  if (errStart != ESP_OK) {
+    Serial.printf("[PORTAL] esp_wifi_start failed: %s\n", esp_err_to_name(errStart));
+  }
 
   IPAddress apIp(192, 168, 4, 1);
   g_dnsServer.start(SETUP_DNS_PORT, "*", apIp);
