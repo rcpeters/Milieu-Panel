@@ -1,5 +1,17 @@
 # Milieu Panel
 
+> **Smart buttons that don't lie to your face.** 🎨🔘
+>
+> Most buttons blindly flip an LED when you press them and hope for the best. **Milieu Panel** decouples the RGB ring from the switch event so your buttons show what your smart home is *actually* doing in real time:
+>
+> 🔴 **Off** → *click!* → 🔵 **Working on it…** → 🟢 **Nailed it!** *(or 🔴 **Plot twist: it failed**)*
+>
+> Bonus superpower: if another Home Assistant automation, voice assistant, or rogue family member toggles a device from across the house, the button colors automatically update to match.
+
+[<img src="docs/img/two_buttons_sample.jpg" alt="Alt text" width="270" height="480">](https://www.youtube.com/shorts/2WVCOeiRdfo)
+
+## Tech Details:
+
 Matter-over-Wi-Fi multi-button RGB controller for Home Assistant, built on the [Seeed Studio XIAO ESP32C6](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html) and supporting **1 to 8 [DFRobot Gravity I2C RGB LED Buttons (DFR0991)](https://www.dfrobot.com/product-2634.html)**.
 
 Connected buttons are auto-discovered over I2C (`0x23`–`0x2A`) and exposed to Home Assistant as two labeled Matter endpoints per button:
