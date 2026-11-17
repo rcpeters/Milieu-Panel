@@ -2,7 +2,7 @@
 
 > **Smart buttons that don't lie to your face.** 🎨🔘
 >
-> Most buttons blindly flip an LED when you press them and hope for the best. **Milieu Panel** decouples the RGB ring from the switch event so your buttons show what your smart home is *actually* doing in real time:
+> Most buttons blindly flip an LED when you press them and hope for the best. **Milieu Panel** decouples the color from the switch event so your buttons show what your smart home is *actually* doing in real time:
 >
 > 🔴 **Off** → *click!* → 🔵 **Working on it…** → 🟢 **Nailed it!** *(or 🔴 **Plot twist: it failed**)*
 >
