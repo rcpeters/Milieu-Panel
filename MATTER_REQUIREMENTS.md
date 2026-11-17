@@ -60,7 +60,7 @@ When the panel is **uncommissioned**, the ESP32-C6 broadcasts an open temporary 
 ## Software & Build (Matter & Firmware Layer)
 * **Toolchain:** Arduino IDE 2.x, Espressif `esp32` core v3.x+ (`XIAO_ESP32C6`), Partition Scheme `Huge APP (3MB No OTA/1MB SPIFFS)`, `USB CDC On Boot: "Enabled"` (`115200` baud).
 * **Libraries:** Built-in `Matter`, `WiFi`, `WebServer`, `DNSServer`, `Preferences`.
-* **Application:** [`Milieu-Panel.ino`](Milieu-Panel.ino) (Matter endpoints, switch/light callbacks, NVS persistence, captive portal, and status LED state machine) with SoftAP settings in [`config.h`](config.h).
+* **Application:** [`sketches/milieuMatter/milieuMatter.ino`](sketches/milieuMatter/milieuMatter.ino) (Matter endpoints, switch/light callbacks, NVS persistence, captive portal, and status LED state machine) with SoftAP settings in [`sketches/milieuMatter/config.h`](sketches/milieuMatter/config.h).
 
 ## Acceptance Criteria
 - [x] Saves `btn_mask` to NVS when uncommissioned, blinks blue (`10%`), prints Matter pairing details on Serial, and hosts the `"Milieu-Panel-Setup"` (`192.168.4.1`) offline QR code captive portal until commissioned.

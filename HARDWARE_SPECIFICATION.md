@@ -48,7 +48,7 @@ Each `DFR0991` module must be set to a unique I2C address (`0x23`–`0x2A`) via 
 
 ## Software & Build (Hardware Layer)
 * **Board Target:** `XIAO_ESP32C6` (Espressif `esp32` Arduino core v3.x+).
-* **Libraries & Config:** `Wire` (built-in) and `DFRobot_RGBButton`, with hardware pins, I2C addresses, PWM levels, and debounce/probe timings defined in [`config.h`](config.h).
+* **Libraries & Config:** `Wire` (built-in) and `DFRobot_RGBButton`, with hardware pins, I2C addresses, PWM levels, and debounce/probe timings defined in [`sketches/milieuMatter/config.h`](sketches/milieuMatter/config.h).
 
 ## Acceptance Criteria
 - [x] Builds for `XIAO_ESP32C6`, initializes RF switch (`GPIO3 = LOW`, `GPIO14 = LOW`), and configures `100 kHz` I2C with a `50 ms` timeout.

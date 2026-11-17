@@ -2,7 +2,7 @@
 
 > **Smart buttons that don't lie to your face.** 🎨🔘
 >
-> Most buttons blindly flip an LED when you press them and hope for the best. **Milieu Panel** decouples the color from the switch event so your buttons show what your smart home is *actually* doing in real time:
+> Most buttons blindly flip an LED when you press them and hope for the best. **Milieu Panel** decouples the color from the switch event so your buttons show what your smart home is *actually* doing in real time. An example flow you can program into home assistant is:
 >
 > 🔴 **Off** → *click!* → 🔵 **Working on it…** → 🟢 **Nailed it!** *(or 🔴 **Plot twist: it failed**)*
 >
@@ -26,7 +26,7 @@ See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus d
 
 1. **ESP32 Core (v3.x+):** In **Tools → Board → Boards Manager**, install **`esp32` by Espressif Systems** (`v3.x` or newer).
 2. **Library:** In **Tools → Manage Libraries**, install **`DFRobot_RGBButton`**.
-3. **Board Settings:** Open [`Milieu-Panel.ino`](Milieu-Panel.ino) and set:
+3. **Board Settings:** Open [`sketches/milieuMatter/milieuMatter.ino`](sketches/milieuMatter/milieuMatter.ino) and set:
    - **Board:** `XIAO_ESP32C6`
    - **USB CDC On Boot:** `"Enabled"`
    - **Partition Scheme:** `"Huge APP (3MB No OTA/1MB SPIFFS)"`
