@@ -18,30 +18,7 @@ Connected buttons are auto-discovered over I2C (`0x23`–`0x2A`) and exposed to 
 - **`Button 1`–`Button 8` (`event` entity):** Emits `initial_press`, `short_release`, `long_press`, and `long_release` events.
 - **`Button 1 Light`–`Button 8 Light` (`light` entity):** Controls each button's On/Off state and RGB color. Brightness is fixed in firmware at **`10%`** (`PWM 26`) to stay within the XIAO ESP32C6 `3V3` power budget.
 
-See [REQUIREMENTS.md](REQUIREMENTS.md) for the full specification and power calculations.
-
----
-
-## Hardware & Wiring
-
-Connect 1 to 8 button modules in parallel on the 3.3V I2C bus (`100 kHz`; onboard pull-ups are built into each button module, so no external pull-ups or level shifters are needed).
-
-| Signal | XIAO ESP32C6    | Button Module (`0x23`–`0x2A`) | Gravity Wire |
-|--------|-----------------|-------------------------------|--------------|
-| SDA    | `D4` (`GPIO22`) | `D` (SDA)                     | Green        |
-| SCL    | `D5` (`GPIO23`) | `C` (SCL)                     | Blue         |
-| 3.3V   | `3V3`           | `+` (VCC)                     | Red          |
-| GND    | `GND`           | `-` (GND)                     | Black        |
-
-### DIP Switch Addresses
-Set each button to a unique I2C address before powering on:
-
-| Button | Address | DIP (`A2 A1 A0`) | Button | Address | DIP (`A2 A1 A0`) |
-|--------|---------|------------------|--------|---------|------------------|
-| **1**  | `0x23`  | `0 0 0`          | **5**  | `0x27`  | `1 0 0`          |
-| **2**  | `0x24`  | `0 0 1`          | **6**  | `0x28`  | `1 0 1`          |
-| **3**  | `0x25`  | `0 1 0`          | **7**  | `0x29`  | `1 1 0`          |
-| **4**  | `0x26`  | `0 1 1`          | **8**  | `0x2A`  | `1 1 1`          |
+See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus details, and 3.3V power calculations, and [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) for Matter endpoints, commissioning, and Home Assistant behavior.
 
 ---
 
@@ -68,4 +45,4 @@ Set each button to a unique I2C address before powering on:
    - **Blinking Red (`10%`):** Wi-Fi or Matter disconnected
    - **Solid White (`10%`):** Online, waiting for initial color sync from Home Assistant (reports `Off` to Matter on boot so HA automations can trigger on reconnect)
    - **Solid RGB (`10%`):** Online and synced with Home Assistant
-3. **Add/Remove Buttons (Factory Reset):** Hold the XIAO's onboard **`BOOT` button (`GPIO9`) for 5 seconds** until all buttons flash **Purple 3x** (or remove the device in Home Assistant and reboot). The board will clear its saved button mask and re-scan the I2C bus.
+3. **Add/Remove Buttons (Factory Reset):** Hold the XIAO's onboard **`BOOT` button (`GPIO9`)**—or short the **`BOOT` (`GPIO9`) and `GND` pads/pins underneath the board**—for **5 seconds** until all buttons flash **Purple 3x** (or remove the device in Home Assistant and reboot). The board will clear its saved button mask and re-scan the I2C bus.
