@@ -2,7 +2,7 @@
 
 Hardware specification, wiring, power budget, and physical I2C/button behavior for **Milieu Panel** (1 to 8 RGB buttons on the **Seeed Studio XIAO ESP32C6**).
 
-For the Matter protocol, endpoints, commissioning portal, and Home Assistant behavior, see [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md).
+For firmware protocol and Home Assistant integration details, see [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) (Matter implementation) and [ESPHOME_REQUIREMENTS.md](ESPHOME_REQUIREMENTS.md) (planned ESPHome implementation).
 
 ## Scope
 * **Controller:** [Seeed Studio XIAO ESP32C6](https://wiki.seeedstudio.com/xiao_esp32c6_getting_started/) (USB-C powered).

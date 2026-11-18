@@ -18,7 +18,7 @@ Connected buttons are auto-discovered over I2C (`0x23`–`0x2A`) and exposed to 
 - **`Button 1`–`Button 8` (`event` entity):** Emits `initial_press`, `short_release`, `long_press`, and `long_release` events.
 - **`Button 1 Light`–`Button 8 Light` (`light` entity):** Controls each button's On/Off state and RGB color. Brightness is fixed in firmware at **`10%`** (`PWM 26`) to stay within the XIAO ESP32C6 `3V3` power budget.
 
-See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus details, and 3.3V power calculations, and [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) for Matter endpoints, commissioning, and Home Assistant behavior.
+See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus details, and 3.3V power calculations, [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) for Matter endpoints, commissioning, and Home Assistant behavior, and [ESPHOME_REQUIREMENTS.md](ESPHOME_REQUIREMENTS.md) for the planned ESPHome implementation.
 
 ---
 
