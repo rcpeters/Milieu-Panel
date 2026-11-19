@@ -12,13 +12,13 @@
 
 ## Tech Details:
 
-Matter-over-Wi-Fi multi-button RGB controller for Home Assistant, built on the [Seeed Studio XIAO ESP32C6](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html) and supporting **1 to 8 [DFRobot Gravity I2C RGB LED Buttons (DFR0991)](https://www.dfrobot.com/product-2634.html)**.
+**Matter-over-Wi-Fi** or **ESPHome** multi-button RGB controller for Home Assistant, built on the [Seeed Studio XIAO ESP32C6](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html) and supporting **1 to 8 [DFRobot Gravity I2C RGB LED Buttons (DFR0991)](https://www.dfrobot.com/product-2634.html)**.
 
-Connected buttons are auto-discovered over I2C (`0x23`–`0x2A`) and exposed to Home Assistant as two labeled Matter endpoints per button:
+Choose either firmware stack—both share the same hardware wiring and expose two labeled entities per auto-discovered I2C button (`0x23`–`0x2A`):
 - **`Button 1`–`Button 8` (`event` entity):** Emits `initial_press`, `short_release`, `long_press`, and `long_release` events.
-- **`Button 1 Light`–`Button 8 Light` (`light` entity):** Controls each button's On/Off state and RGB color. Brightness is fixed in firmware at **`10%`** (`PWM 26`) to stay within the XIAO ESP32C6 `3V3` power budget.
+- **`Button 1 Light`–`Button 8 Light` (`light` entity):** Controls each button's On/Off state and RGB color. Brightness is capped in firmware at **`10%`** (`PWM 26`) by default to stay within the XIAO ESP32C6 `3V3` power budget (fixed at `10%` in Matter; configurable up to `48%` in ESPHome).
 
-See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus details, and 3.3V power calculations, [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) for Matter endpoints, commissioning, and Home Assistant behavior, and [ESPHOME_REQUIREMENTS.md](ESPHOME_REQUIREMENTS.md) for the ESPHome implementation.
+See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus details, and 3.3V power calculations, [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) for the **Matter** firmware specification, and [ESPHOME_REQUIREMENTS.md](ESPHOME_REQUIREMENTS.md) for the **ESPHome** firmware specification.
 
 ---
 
@@ -32,9 +32,7 @@ See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus d
    - **Partition Scheme:** `"Huge APP (3MB No OTA/1MB SPIFFS)"`
 4. **Upload:** Click **Upload** and open **Serial Monitor** at **`115200` baud**.
 
----
-
-## Commissioning & Operation
+### Matter Commissioning & Operation
 
 1. **Pair with Home Assistant:** On an uncommissioned boot, connected buttons blink **Blue (`10%`)**:
    - **Via Temporary Wi-Fi Portal (no USB Serial needed):** Connect a phone or laptop to the **`Milieu-Panel-Setup`** Wi-Fi network and open **`http://192.168.4.1`** (or use the captive portal popup) to view the scannable **Matter QR Code**, one-tap **Manual Pairing Code**, and discovered buttons. The SoftAP shuts down automatically as soon as commissioning completes.
