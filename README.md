@@ -22,6 +22,15 @@ See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus d
 
 ---
 
+## 3D Printing & Assembly
+
+See [docs/enclosure/README.md](docs/enclosure/README.md) for the complete enclosure hardware list, printable CAD files, and step-by-step assembly instructions:
+- **Parametric CAD & STEP Files:** Includes the Fusion 360 design (`Milieu_Panel_V1.f3d`) plus ready-to-print 1–4 button `.step` files.
+- **Hardware & Connectors:** Lists screws (`M3×6`), `DFR0991` connector options (`JST PH2.0-4P` and `2.54 mm` DuPont), and wiring tips.
+- **Assembly Guide:** Photo walkthrough covering soldering, seating the XIAO ESP32-C6, mounting the buttons, and snapping on the cover.
+
+---
+
 ## Option A: Matter Firmware (Arduino IDE)
 
 1. **ESP32 Core (v3.x+):** In **Tools → Board → Boards Manager**, install **`esp32` by Espressif Systems** (`v3.x` or newer).
