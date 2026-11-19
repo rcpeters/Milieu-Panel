@@ -75,8 +75,28 @@ static uint8_t scanButtons() {
   return mask;
 }
 
-static uint8_t scalePwm(uint8_t val, uint8_t maxPwm) {
-  return (uint8_t)(((uint16_t)val * maxPwm + 127U) / 255U);
+static void scaleRgbWithFloor(const espRgbColor_t &fullRgb, uint8_t level254,
+                              uint8_t maxPwm, uint8_t &outR, uint8_t &outG, uint8_t &outB) {
+  if (level254 == 0 || (fullRgb.r == 0 && fullRgb.g == 0 && fullRgb.b == 0)) {
+    outR = outG = outB = 0;
+    return;
+  }
+  const uint32_t denom = 255UL * 254UL;
+  const uint32_t half = denom / 2UL;
+  const uint32_t scale = (uint32_t)level254 * maxPwm;
+  outR = (uint8_t)(((uint32_t)fullRgb.r * scale + half) / denom);
+  outG = (uint8_t)(((uint32_t)fullRgb.g * scale + half) / denom);
+  outB = (uint8_t)(((uint32_t)fullRgb.b * scale + half) / denom);
+
+  // Minimum visible floor: keep On lights with non-zero color/level visibly lit at PWM 1
+  if (outR == 0 && outG == 0 && outB == 0) {
+    uint8_t peak = fullRgb.r;
+    if (fullRgb.g > peak) peak = fullRgb.g;
+    if (fullRgb.b > peak) peak = fullRgb.b;
+    if (fullRgb.r == peak) outR = 1;
+    if (fullRgb.g == peak) outG = 1;
+    if (fullRgb.b == peak) outB = 1;
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -102,7 +122,7 @@ static void checkFactoryReset(uint32_t now) {
       Serial.println("\n[RESET] Factory reset triggered -> Flashing Purple 3x...");
       for (uint8_t c = 0; c < FACTORY_RESET_BLINK_COUNT; ++c) {
         for (uint8_t a = BUTTON_ADDR_MIN; a <= BUTTON_ADDR_MAX; ++a) {
-          setButtonRgb(a, LED_PWM_ON, 0, LED_PWM_ON);
+          setButtonRgb(a, LED_PWM_STATUS, 0, LED_PWM_STATUS);
         }
         delay(FACTORY_RESET_BLINK_MS);
         for (uint8_t a = BUTTON_ADDR_MIN; a <= BUTTON_ADDR_MAX; ++a) {
@@ -131,11 +151,12 @@ static bool onLightChange(uint8_t idx, bool state, espHsvColor_t hsv) {
   if (idx >= g_buttonCount) {
     return true;
   }
-  espRgbColor_t rgb = espHsvColorToRgbColor({hsv.h, hsv.s, 254});
+  espRgbColor_t fullRgb = espHsvColorToRgbColor({hsv.h, hsv.s, 254});
   portENTER_CRITICAL(&g_mux);
   g_buttons[idx].haSynced = true;
   g_buttons[idx].isOn = state;
-  g_buttons[idx].rgb = rgb;
+  g_buttons[idx].rgb = fullRgb;
+  g_buttons[idx].brightness = hsv.v;
   portEXIT_CRITICAL(&g_mux);
   return true;
 }
@@ -509,22 +530,21 @@ static void updateLeds(NodeState state, uint32_t now) {
 
     uint8_t r = 0, g = 0, bl = 0;
     if (state == NodeState::UNCOMMISSIONED) {
-      bl = blinkOn ? LED_PWM_ON : LED_PWM_OFF;
+      bl = blinkOn ? LED_PWM_STATUS : LED_PWM_OFF;
     } else if (state == NodeState::OFFLINE) {
-      r = blinkOn ? LED_PWM_ON : LED_PWM_OFF;
+      r = blinkOn ? LED_PWM_STATUS : LED_PWM_OFF;
     } else {
       portENTER_CRITICAL(&g_mux);
       bool synced = b.haSynced;
       bool on = b.isOn;
       espRgbColor_t c = b.rgb;
+      uint8_t level = b.brightness;
       portEXIT_CRITICAL(&g_mux);
 
       if (synced && on) {
-        r = scalePwm(c.r, LED_PWM_ON);
-        g = scalePwm(c.g, LED_PWM_ON);
-        bl = scalePwm(c.b, LED_PWM_ON);
+        scaleRgbWithFloor(c, level, LED_PWM_MAX, r, g, bl);
       } else if (!synced) {
-        r = g = bl = LED_PWM_ON; // White (10% waiting for HA sync)
+        r = g = bl = LED_PWM_STATUS; // White (waiting for HA sync)
       }
     }
 

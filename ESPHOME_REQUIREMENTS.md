@@ -32,18 +32,19 @@ Polled every `20 ms` with `50 ms` debounce and `1000 ms` long-press threshold (a
 
 ### RGB LEDs (`light` & Status)
 Each `Button i Light` uses `ColorMode::RGB` with `restore_mode: ALWAYS_OFF`.
-* **Power-Safe Brightness Scaling:** Home Assistant's `0–100%` brightness slider is scaled linearly onto `0..max_pwm`, where `max_pwm` defaults to **`10%` (`PWM 26`)** and is configurable in YAML up to the **`48%` (`PWM 124`)** recommended continuous peripheral cap (see [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md)).
-* **Boot Sync Handshake (`!haSynced`):** On boot/reconnect before Home Assistant sends a light update, each button displays solid **White** at `10%` (`PWM 26`) while reporting `Off` to Home Assistant so HA reconnect automations trigger cleanly.
+* **Power-Safe Brightness Scaling:** Home Assistant's `0–100%` brightness slider is scaled linearly onto `0..max_pwm`, where `max_brightness` defaults to **`10%` (`PWM 26`)** and is validated at compile time to **`≤ 48%`** on `3.3V` (`power_rail_5v: false`), or up to **`100%`** (`PWM 255`) when `power_rail_5v: true` is explicitly set for a 5V hardware build (see [5V_UPGRADE_README.md](5V_UPGRADE_README.md)).
+* **Minimum Visible Floor:** When a light is `On` with a non-zero color/level and linear scaling rounds all RGB channels to `0`, the strongest channel(s) are floored to `PWM 1` so `1%` brightness stays visibly lit.
+* **Status LEDs & Boot Sync Handshake (`!haSynced`):** Status states (Blue/Red blink, Solid White pre-sync, Amber OTA, Purple reset) stay capped at `min(10% / PWM 26, max_pwm)`. On boot/reconnect before Home Assistant sends a light update, each button displays solid **White** while reporting `Off` to Home Assistant so HA reconnect automations trigger cleanly.
 
 | State | LED Behavior |
 |-------|--------------|
-| **Unprovisioned (no Wi-Fi, waiting for `improv_serial`)** | Blink **Blue** at `10%` (`PWM 26`), `1 Hz` (`500 ms` on/off) |
-| **Wi-Fi or HA Native API offline** | Blink **Red** at `10%` (`PWM 26`), `1 Hz` (`500 ms` on/off) |
-| **Online, waiting for HA sync (`!haSynced`)** | Solid **White** at `10%` (`PWM 26`) until first HA light command |
-| **Online (`isOn = true`)** | Solid **HA RGB color**, brightness scaled to `0..max_pwm` (default `10%` / `PWM 26`) |
+| **Unprovisioned (no Wi-Fi, waiting for `improv_serial`)** | Blink **Blue** at `status_pwm` (default `10%` / `PWM 26`), `1 Hz` (`500 ms` on/off) |
+| **Wi-Fi or HA Native API offline** | Blink **Red** at `status_pwm` (default `10%` / `PWM 26`), `1 Hz` (`500 ms` on/off) |
+| **Online, waiting for HA sync (`!haSynced`)** | Solid **White** at `status_pwm` (default `10%` / `PWM 26`) until first HA light command |
+| **Online (`isOn = true`)** | Solid **HA RGB color**, brightness scaled linearly onto `0..max_pwm` (min `PWM 1` floor when non-zero) |
 | **Online (`isOn = false` after sync)** | **Off (`PWM 0`)** |
-| **OTA update in progress** | **Amber** at `10%` (`PWM 26`, pulsing/solid during transfer) |
-| **Factory reset (`BOOT` held `5 s`)** | Flash **Purple** 3x at `10%` (`PWM 26`, `150 ms` on/off) |
+| **OTA update in progress** | **Amber** at `status_pwm` (default `10%` / `PWM 26`) |
+| **Factory reset (`BOOT` held `5 s`)** | Flash **Purple** 3x at `status_pwm` (`150 ms` on/off) |
 
 ## Provisioning, Security & OTA
 * **Wired Wi-Fi Setup (`improv_serial`):** Factory/prebuilt firmware uses USB-C Improv Serial so Wi-Fi credentials are sent strictly over the USB cable rather than over an unencrypted SoftAP or BLE link.
@@ -66,5 +67,5 @@ Each `Button i Light` uses `ColorMode::RGB` with `restore_mode: ALWAYS_OFF`.
 - [ ] Scans `0x23`–`0x2A` when no `btn_mask` is saved (retrying every `5 s` if empty), persists `btn_mask` in NVS, exposes only discovered `Button i` (`event`) and `Button i Light` (`light`) entities, and recovers hot-plugged buttons every `5 s`.
 - [ ] Supports USB-C `improv_serial` provisioning and `dashboard_import` adoption (plus optional `secrets.yaml`), without enabling unencrypted `captive_portal` AP or BLE Improv.
 - [ ] Emits `initial_press`, `short_release`, `long_press`, and `long_release` via native ESPHome `event` entities (`20 ms` poll, `50 ms` debounce, `1000 ms` hold).
-- [ ] Displays `10%` White on boot until first HA light update (while reporting `Off`), scales HA `0–100%` brightness onto `0..max_pwm` (default `10%` / `PWM 26`, max `48%`), blinks Blue/Red for unprovisioned/offline states, and indicates OTA updates in Amber.
+- [ ] Displays status White (`min(10%, max_pwm)`) on boot until first HA light update (while reporting `Off`), scales HA `0–100%` brightness linearly onto `0..max_pwm` (default `10%` / `PWM 26`, `48%` 3.3V cap, `100%` with `power_rail_5v: true`, min `PWM 1` floor when On), blinks Blue/Red for unprovisioned/offline states, and indicates OTA updates in Amber.
 - [ ] Flashes Purple 3x and clears both NVS `btn_mask` and stored Wi-Fi/Improv credentials when `BOOT` (`GPIO9`) is held or shorted to `GND` for `5 s`.

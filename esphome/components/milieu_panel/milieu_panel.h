@@ -96,6 +96,7 @@ class MilieuPanel : public Component {
   void dump_config() override;
 
   void set_i2c_bus(i2c::I2CBus *bus) { this->bus_ = bus; }
+  void set_power_rail_5v(bool is_5v);
   void set_max_brightness(float max_brightness);
   void set_external_antenna(bool external) { this->external_antenna_ = external; }
   void set_boot_pin(uint8_t pin) { this->boot_pin_ = pin; }
@@ -122,6 +123,7 @@ class MilieuPanel : public Component {
   bool read_button_pressed(i2c::I2CDevice &dev, bool &pressed);
   void disconnect_slot(ButtonSlot &slot, uint32_t now);
 
+  void recompute_pwm_limits();
   NodeState get_node_state() const;
   void check_factory_reset(uint32_t now);
   void update_buttons(NodeState state, uint32_t now);
@@ -137,7 +139,10 @@ class MilieuPanel : public Component {
   bool scanning_for_buttons_{false};
   uint32_t last_scan_ms_{0};
 
+  bool power_rail_5v_{false};
+  float max_brightness_{0.10f};
   uint8_t max_pwm_{LED_PWM_STATUS};
+  uint8_t status_pwm_{LED_PWM_STATUS};
   bool external_antenna_{false};
   uint8_t boot_pin_{9};
   uint8_t rf_switch_pin_{3};

@@ -22,9 +22,27 @@ constexpr uint8_t BUTTON_ADDR_MIN = 0x23;
 constexpr uint8_t BUTTON_ADDR_MAX = 0x2A;
 constexpr uint8_t MAX_BUTTONS = BUTTON_ADDR_MAX - BUTTON_ADDR_MIN + 1; // 8
 
-// 3.3V Rail Power-Safe Brightness Level (PWM 0..255)
+// Power Rail & Compile-Time Max Brightness Cap (PWM 0..255)
+// Set POWER_RAIL_5V to 1 ONLY when buttons are powered at 5V through an I2C level shifter (see 5V_UPGRADE_README.md).
+#ifndef POWER_RAIL_5V
+#define POWER_RAIL_5V 0
+#endif
+
+#ifndef MAX_BRIGHTNESS_PCT
+#define MAX_BRIGHTNESS_PCT 10
+#endif
+
+constexpr uint8_t MAX_BRIGHTNESS_LIMIT_PCT = POWER_RAIL_5V ? 100 : 48;
+static_assert(MAX_BRIGHTNESS_PCT >= 1 && MAX_BRIGHTNESS_PCT <= 100,
+              "MAX_BRIGHTNESS_PCT must be between 1 and 100");
+static_assert(MAX_BRIGHTNESS_PCT <= MAX_BRIGHTNESS_LIMIT_PCT,
+              "MAX_BRIGHTNESS_PCT exceeds 48% 3.3V power budget; set POWER_RAIL_5V 1 only after 5V upgrade");
+
 constexpr uint8_t LED_PWM_OFF = 0;
-constexpr uint8_t LED_PWM_ON = 26; // 10% fixed brightness
+constexpr uint8_t LED_PWM_MAX =
+    (uint8_t)(((uint16_t)MAX_BRIGHTNESS_PCT * 255U + 50U) / 100U); // 10% -> 26, 48% -> 122, 100% -> 255
+constexpr uint8_t LED_PWM_STATUS =
+    (LED_PWM_MAX < 26U) ? LED_PWM_MAX : 26U; // 10% (PWM 26), or lower if MAX_BRIGHTNESS_PCT < 10%
 
 // Timing Constants (ms)
 constexpr uint32_t BUTTON_POLL_INTERVAL_MS = 20;
@@ -66,6 +84,7 @@ struct ButtonSlot {
   bool haSynced = false;
   bool isOn = false;
   espRgbColor_t rgb = {255, 255, 255};
+  uint8_t brightness = 254; // Matter LevelControl 0..254
 
   uint8_t lastR = 255, lastG = 255, lastB = 255;
   bool hasColor = false;

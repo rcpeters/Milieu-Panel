@@ -32,16 +32,19 @@ Initialized with `FEATURE_MOMENTARY | FEATURE_RELEASE | FEATURE_LONG_PRESS`. Pol
 * **Hold `≥ 1000 ms`:** Emits `LongPress` (`sw.longPress()`) at `1000 ms`, then `LongRelease` (`sw.longRelease()`) on release.
 
 ### RGB LEDs (`MatterColorLight` & Status)
-Each `MatterColorLight` starts `Off` with HSV `{0, 0, 254}` (White). When Home Assistant sends a state/color update (`onChange`), `haSynced` is set to `true` and the HSV hue/saturation are converted to RGB at full value (`v = 254`), then scaled to `10%` (`PWM 26`) in firmware (`hsv.v` from Matter is ignored).
+Each `MatterColorLight` starts `Off` with HSV `{0, 0, 254}` (White). When Home Assistant sends a state/color update (`onChange`), `haSynced` is set to `true` and the HSV hue/saturation are converted to full-value RGB, then scaled linearly by Home Assistant's `0–100%` brightness (`hsv.v` / `254`) onto `0..LED_PWM_MAX`:
+* **Compile-Time Max Brightness Cap (`MAX_BRIGHTNESS_PCT`):** Defaults to **`10%`** (`PWM 26`) in [`config.h`](sketches/milieuMatter/config.h) and is enforced at compile time via `static_assert` to **`≤ 48%`** on `3.3V` (`POWER_RAIL_5V 0`), or up to **`100%`** (`PWM 255`) when `POWER_RAIL_5V 1` is explicitly enabled for a 5V hardware build (see [5V_UPGRADE_README.md](5V_UPGRADE_README.md)).
+* **Minimum Visible Floor:** When a light is `On` with a non-zero color/level and linear scaling rounds all RGB channels to `0` (e.g., `1%` slider at `10%` cap), the strongest channel(s) are floored to `PWM 1` so the button stays visibly lit.
+* **Status LEDs (`LED_PWM_STATUS`):** Status states stay capped at `min(10% / PWM 26, LED_PWM_MAX)`.
 
 | State | LED Behavior |
 |-------|--------------|
-| **Uncommissioned (pairing)** | Blink **Blue** at `10%` (`PWM 26`), `1 Hz` (`500 ms` on/off) |
-| **Commissioned, Wi-Fi/Matter offline** | Blink **Red** at `10%` (`PWM 26`), `1 Hz` (`500 ms` on/off) |
-| **Online, waiting for HA sync (`!haSynced`)** | Solid **White** at `10%` (`PWM 26`) until first HA light command |
-| **Online (`isOn = true`)** | Solid **HA RGB color** at `10%` (`PWM 26`) |
+| **Uncommissioned (pairing)** | Blink **Blue** at `LED_PWM_STATUS` (default `10%` / `PWM 26`), `1 Hz` (`500 ms` on/off) |
+| **Commissioned, Wi-Fi/Matter offline** | Blink **Red** at `LED_PWM_STATUS` (default `10%` / `PWM 26`), `1 Hz` (`500 ms` on/off) |
+| **Online, waiting for HA sync (`!haSynced`)** | Solid **White** at `LED_PWM_STATUS` (default `10%` / `PWM 26`) until first HA light command |
+| **Online (`isOn = true`)** | Solid **HA RGB color**, brightness scaled linearly onto `0..LED_PWM_MAX` (min `PWM 1` floor when non-zero) |
 | **Online (`isOn = false` after sync)** | **Off (`PWM 0`)** |
-| **Factory reset (`BOOT` held `5 s`)** | Flash **Purple** 3x at `10%` (`PWM 26`, `150 ms` on/off) |
+| **Factory reset (`BOOT` held `5 s`)** | Flash **Purple** 3x at `LED_PWM_STATUS` (`150 ms` on/off) |
 
 ## Temporary Commissioning Wi-Fi Portal & Offline QR Code Page
 When the panel is **uncommissioned**, the ESP32-C6 broadcasts an open temporary Wi-Fi SoftAP alongside BLE Matter advertising (`WIFI_MODE_APSTA` coexistence mode) so the user can view the Matter **QR Code** and **Manual Pairing Code** without needing a USB Serial connection:
@@ -67,4 +70,4 @@ When the panel is **uncommissioned**, the ESP32-C6 broadcasts an open temporary 
 - [x] Registers Switches on `EP 1..N` (`"Button i"`) and Lights on `EP N+1..2N` (`"Button i Light"`) with `BridgedDeviceBasicInformation` labels and semantic tags, under Vendor `"Make Rob Make"` / Product `"Milieu Panel"`.
 - [x] Automatically clears saved NVS mask and re-scans if remotely decommissioned from the Matter fabric, or on `5 s` `BOOT` hold (`Matter.decommission()`).
 - [x] Emits `InitialPress`, `ShortRelease`, `LongPress`, and `LongRelease` switch events.
-- [x] Displays `10%` White on boot (while reporting `Off` to Matter for HA reconnect sync), shows HA RGB colors at fixed `10%` brightness (ignoring the Matter brightness slider), and blinks red (`10%`) when offline.
+- [ ] Displays status White (`min(10%, LED_PWM_MAX)`) on boot (while reporting `Off` to Matter for HA reconnect sync), scales HA `0–100%` brightness (`hsv.v`) linearly onto `0..LED_PWM_MAX` (default `10%`, `48%` 3.3V compile-time cap, `100%` with `POWER_RAIL_5V 1`, min `PWM 1` floor when On), and blinks red when offline.

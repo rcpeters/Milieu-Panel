@@ -141,22 +141,24 @@ Each `DFR0991` includes onboard **`10 kΩ` pull-up resistors** on `SDA` and `SCL
 Both firmwares intentionally cap brightness to protect the `3V3` rail out of the box. After verifying your 5V wiring, update the cap for whichever firmware you use:
 
 ### Option A: Matter Firmware ([`sketches/milieuMatter/config.h`](sketches/milieuMatter/config.h))
-Increase `LED_PWM_ON` (line 27) from `26` (`10%`) up to `255` (`100%`)—for example `128` (`50%`) or `255` (`100%`):
+Enable `POWER_RAIL_5V` and raise `MAX_BRIGHTNESS_PCT` (up to `100`; Home Assistant's `0–100%` brightness slider scales linearly onto `0..MAX_BRIGHTNESS_PCT`):
 ```cpp
-constexpr uint8_t LED_PWM_ON = 255; // 100% brightness (5V upgrade only)
+#define POWER_RAIL_5V 1
+#define MAX_BRIGHTNESS_PCT 100
 ```
 
-### Option B: ESPHome Firmware
-1. Raise the `48%` (`0.48`) safety ceiling to `100%` (`1.0`) in:
-   - [`esphome/components/milieu_panel/__init__.py`](esphome/components/milieu_panel/__init__.py) (`cv.Range(min=0.01, max=1.0)`)
-   - [`esphome/components/milieu_panel/milieu_panel.cpp`](esphome/components/milieu_panel/milieu_panel.cpp) (`std::min(1.0f, max_brightness)`)
-2. Set `max_brightness` in [`esphome/packages/milieu-panel-base.yaml`](esphome/packages/milieu-panel-base.yaml) (Home Assistant's `0–100%` brightness slider will scale linearly up to this ceiling):
-   ```yaml
-   milieu_panel:
-     id: milieu_hub
-     i2c_id: bus_i2c
-     max_brightness: 100%
-   ```
+### Option B: ESPHome Firmware ([`esphome/packages/milieu-panel-base.yaml`](esphome/packages/milieu-panel-base.yaml))
+Enable `power_rail_5v: true` and raise `max_brightness` (up to `100%`; Home Assistant's `0–100%` brightness slider scales linearly onto `0..max_brightness`):
+```yaml
+milieu_panel:
+  id: milieu_hub
+  i2c_id: bus_i2c
+  power_rail_5v: true
+  max_brightness: 100%
+```
+
+> [!NOTE]
+> Status LEDs (Blue/Red blink, Solid White pre-sync, Amber OTA, and Purple factory reset) remain capped at `10%` (`PWM 26`) even when `max_brightness` is raised to `100%`, keeping boot and flashing safe on `500 mA` PC USB ports.
 
 ---
 

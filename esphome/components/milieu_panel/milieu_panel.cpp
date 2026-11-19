@@ -41,9 +41,21 @@ void MilieuButtonLight::write_state(light::LightState *state) {
   this->parent_->on_light_state(this->slot_, state->current_values.is_on(), r, g, b);
 }
 
-void MilieuPanel::set_max_brightness(float max_brightness) {
-  float clamped = std::max(0.01f, std::min(0.48f, max_brightness));
+void MilieuPanel::recompute_pwm_limits() {
+  float limit = this->power_rail_5v_ ? 1.0f : 0.48f;
+  float clamped = std::max(0.01f, std::min(limit, this->max_brightness_));
   this->max_pwm_ = static_cast<uint8_t>(std::lroundf(clamped * 255.0f));
+  this->status_pwm_ = std::min(LED_PWM_STATUS, this->max_pwm_);
+}
+
+void MilieuPanel::set_power_rail_5v(bool is_5v) {
+  this->power_rail_5v_ = is_5v;
+  this->recompute_pwm_limits();
+}
+
+void MilieuPanel::set_max_brightness(float max_brightness) {
+  this->max_brightness_ = max_brightness;
+  this->recompute_pwm_limits();
 }
 
 void MilieuPanel::register_button_event(uint8_t idx, MilieuButtonEvent *ev) {
@@ -74,9 +86,22 @@ void MilieuPanel::on_light_state(uint8_t idx, bool is_on, float r, float g, floa
   slot.ha_synced = true;
   slot.is_on = is_on;
   if (is_on) {
-    slot.r = static_cast<uint8_t>(std::lroundf(clamp_unit(r) * static_cast<float>(this->max_pwm_)));
-    slot.g = static_cast<uint8_t>(std::lroundf(clamp_unit(g) * static_cast<float>(this->max_pwm_)));
-    slot.b = static_cast<uint8_t>(std::lroundf(clamp_unit(b) * static_cast<float>(this->max_pwm_)));
+    float cr = clamp_unit(r);
+    float cg = clamp_unit(g);
+    float cb = clamp_unit(b);
+    uint8_t out_r = static_cast<uint8_t>(std::lroundf(cr * static_cast<float>(this->max_pwm_)));
+    uint8_t out_g = static_cast<uint8_t>(std::lroundf(cg * static_cast<float>(this->max_pwm_)));
+    uint8_t out_b = static_cast<uint8_t>(std::lroundf(cb * static_cast<float>(this->max_pwm_)));
+    // Minimum visible floor: keep On lights with non-zero color/level visibly lit at PWM 1
+    float peak = std::max(cr, std::max(cg, cb));
+    if (out_r == 0 && out_g == 0 && out_b == 0 && peak > 0.0f) {
+      if (cr >= peak - 1e-6f) out_r = 1;
+      if (cg >= peak - 1e-6f) out_g = 1;
+      if (cb >= peak - 1e-6f) out_b = 1;
+    }
+    slot.r = out_r;
+    slot.g = out_g;
+    slot.b = out_b;
   } else {
     slot.r = 0;
     slot.g = 0;
@@ -88,8 +113,8 @@ void MilieuPanel::set_ota_active(bool active) {
   this->ota_active_ = active;
   if (active) {
     // Write Amber synchronously before OTA flash writes block loop()
-    constexpr uint8_t amber_r = LED_PWM_STATUS;
-    constexpr uint8_t amber_g = LED_PWM_STATUS / 2;
+    uint8_t amber_r = this->status_pwm_;
+    uint8_t amber_g = (this->status_pwm_ > 0) ? std::max<uint8_t>(1, this->status_pwm_ / 2) : 0;
     for (uint8_t i = 0; i < this->button_count_; ++i) {
       ButtonSlot &slot = this->slots_[i];
       if (slot.active && slot.connected) {
@@ -228,8 +253,10 @@ void MilieuPanel::dump_config() {
                 this->rf_switch_pin_, this->antenna_select_pin_);
   ESP_LOGCONFIG(TAG, "  BOOT Reset Pin: GPIO%u (hold %lu ms)",
                 this->boot_pin_, static_cast<unsigned long>(this->factory_reset_hold_ms_));
-  ESP_LOGCONFIG(TAG, "  Max PWM Cap: %u/255 (%.0f%%)",
-                this->max_pwm_, (static_cast<float>(this->max_pwm_) / 255.0f) * 100.0f);
+  ESP_LOGCONFIG(TAG, "  Power Rail: %s", this->power_rail_5v_ ? "5V (up to 100%)" : "3.3V (48% cap)");
+  ESP_LOGCONFIG(TAG, "  Max PWM Cap: %u/255 (%.0f%%), Status PWM: %u/255",
+                this->max_pwm_, (static_cast<float>(this->max_pwm_) / 255.0f) * 100.0f,
+                this->status_pwm_);
   ESP_LOGCONFIG(TAG, "  Active Buttons: %u (mask 0x%02X)", this->button_count_, this->button_mask_);
 }
 
@@ -258,7 +285,7 @@ void MilieuPanel::check_factory_reset(uint32_t now) {
       this->boot_hold_start_ms_ = now;
     } else if ((now - this->boot_hold_start_ms_) >= this->factory_reset_hold_ms_) {
       ESP_LOGW(TAG, "Factory reset triggered! Flashing Purple 3x and clearing NVS + Wi-Fi...");
-      uint8_t purple[3] = {LED_PWM_STATUS, 0, LED_PWM_STATUS};
+      uint8_t purple[3] = {this->status_pwm_, 0, this->status_pwm_};
       uint8_t off[3] = {0, 0, 0};
       for (uint8_t c = 0; c < FACTORY_RESET_BLINK_COUNT; ++c) {
         for (uint8_t a = BUTTON_ADDR_MIN; a <= BUTTON_ADDR_MAX; ++a) {
@@ -385,14 +412,14 @@ void MilieuPanel::update_leds(NodeState state, uint32_t now) {
     uint8_t b = LED_PWM_OFF;
 
     if (state == NodeState::UNPROVISIONED) {
-      b = blink_on ? LED_PWM_STATUS : LED_PWM_OFF;
+      b = blink_on ? this->status_pwm_ : LED_PWM_OFF;
     } else if (state == NodeState::OFFLINE) {
-      r = blink_on ? LED_PWM_STATUS : LED_PWM_OFF;
+      r = blink_on ? this->status_pwm_ : LED_PWM_OFF;
     } else {
       if (!slot.ha_synced) {
-        r = LED_PWM_STATUS;
-        g = LED_PWM_STATUS;
-        b = LED_PWM_STATUS;
+        r = this->status_pwm_;
+        g = this->status_pwm_;
+        b = this->status_pwm_;
       } else if (slot.is_on) {
         r = slot.r;
         g = slot.g;

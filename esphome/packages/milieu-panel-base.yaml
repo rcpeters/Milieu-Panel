@@ -27,6 +27,7 @@ i2c:
 milieu_panel:
   id: milieu_hub
   i2c_id: bus_i2c
+  power_rail_5v: false
   max_brightness: 10%
   external_antenna: false
 

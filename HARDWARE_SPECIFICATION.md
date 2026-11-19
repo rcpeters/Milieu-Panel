@@ -33,7 +33,7 @@ Each `DFR0991` module must be set to a unique I2C address (`0x23`–`0x2A`) via 
 ## 3.3V Power Budget & Brightness Limits
 * **XIAO ESP32C6 `3V3` Rail:** `700 mA` LDO max minus `354 mA` ESP32-C6 peak Wi-Fi TX = `346 mA` peak headroom (`250 mA` recommended continuous peripheral budget; `200 mA` conservative).
 * **Per-Button Draw (`DFR0991` Full White):** `~2 mA` MCU (`16 mA` for 8 buttons) + up to `60 mA` worst-case (`~35 mA` typical at 3.3V) LED current at 100% white.
-* **Firmware Fixed Brightness (`10%` / `PWM 26`):** Brightness is fixed locally in firmware (scaling RGB output to `10%`) so all 8 buttons in full white stay well within the `3V3` budget:
+* **Compile-Time Max Brightness Cap (`10%` default / `48%` 3.3V max):** Both Matter (`MAX_BRIGHTNESS_PCT` in `config.h`) and ESPHome (`max_brightness` in YAML) cap maximum brightness at compile time (defaulting to **`10%` / `PWM 26`** and enforcing **`≤ 48%`** on 3.3V) and scale Home Assistant's `0–100%` brightness slider linearly onto `0..max_brightness`. To unlock `100%` (`PWM 255`), see [5V_UPGRADE_README.md](5V_UPGRADE_README.md):
 
 | Mode / Budget Tier | Brightness (`PWM`) | Per-Button LED (White) | 8-Button Total (incl. `16 mA` MCUs) |
 |--------------------|--------------------|------------------------|-------------------------------------|
