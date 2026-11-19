@@ -31,7 +31,7 @@ See [docs/enclosure/README.md](docs/enclosure/README.md) for the complete enclos
 
 ---
 
-## Option A: ESPHome Firmware (ESP-IDF)
+## Option A: [ESPHome](https://esphome.io/) Firmware (ESP-IDF)
 
 1. **Adoptable / Factory Build (USB-C Improv Serial):**
    - Flash [`esphome/milieu-panel.yaml`](esphome/milieu-panel.yaml) over USB-C with ESPHome (`esphome run esphome/milieu-panel.yaml`), then provision Wi-Fi over wired USB-C via **Improv Serial** (no open SoftAP or unencrypted BLE Wi-Fi provisioning).
