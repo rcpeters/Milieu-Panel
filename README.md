@@ -9,6 +9,7 @@
 > Bonus superpower: if another Home Assistant automation, voice assistant, or rogue family member toggles a device from across the house, the button colors automatically update to match.
 
 [<img src="docs/img/two_buttons_sample.jpg" alt="Alt text" width="270" height="480">](https://www.youtube.com/shorts/2WVCOeiRdfo)
+[View short video](https://www.youtube.com/shorts/2WVCOeiRdfo)
 
 ## Tech Details:
 
