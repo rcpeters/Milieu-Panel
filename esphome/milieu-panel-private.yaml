@@ -1,0 +1,36 @@
+# Milieu Panel - Compile-Time Encrypted ESPHome Configuration
+# Copy esphome/secrets.yaml.example to esphome/secrets.yaml and fill in your values.
+
+esphome:
+  name: milieu-panel
+  friendly_name: "Milieu Panel"
+  min_version: "2024.6.0"
+  project:
+    name: rcpeters.milieu-panel
+    version: "1.0.0"
+
+packages:
+  base: !include packages/milieu-panel-base.yaml
+
+improv_serial:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: none
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+    on_begin:
+      then:
+        - lambda: |-
+            id(milieu_hub).set_ota_active(true);
+    on_error:
+      then:
+        - lambda: |-
+            id(milieu_hub).set_ota_active(false);

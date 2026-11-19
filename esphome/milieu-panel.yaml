@@ -1,0 +1,39 @@
+# Milieu Panel - Factory / Adoptable ESPHome Configuration
+# Uses wired USB-C Improv Serial for Wi-Fi setup and dashboard_import for
+# ESPHome Builder adoption (which provisions a unique per-device Noise API key).
+# For compile-time Wi-Fi + encrypted API from first flash, use milieu-panel-private.yaml.
+
+esphome:
+  name: milieu-panel
+  friendly_name: "Milieu Panel"
+  name_add_mac_suffix: true
+  min_version: "2024.6.0"
+  project:
+    name: rcpeters.milieu-panel
+    version: "1.0.0"
+
+packages:
+  base: !include packages/milieu-panel-base.yaml
+
+# Wired USB-C Wi-Fi provisioning (no open SoftAP or unencrypted BLE Wi-Fi)
+improv_serial:
+
+wifi:
+  power_save_mode: none
+
+api:
+
+ota:
+  - platform: esphome
+    on_begin:
+      then:
+        - lambda: |-
+            id(milieu_hub).set_ota_active(true);
+    on_error:
+      then:
+        - lambda: |-
+            id(milieu_hub).set_ota_active(false);
+
+dashboard_import:
+  package_import_url: github://rcpeters/Milieu-Panel/esphome/milieu-panel.yaml@main
+  import_full_config: false

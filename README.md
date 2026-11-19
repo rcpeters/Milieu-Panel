@@ -18,11 +18,11 @@ Connected buttons are auto-discovered over I2C (`0x23`–`0x2A`) and exposed to 
 - **`Button 1`–`Button 8` (`event` entity):** Emits `initial_press`, `short_release`, `long_press`, and `long_release` events.
 - **`Button 1 Light`–`Button 8 Light` (`light` entity):** Controls each button's On/Off state and RGB color. Brightness is fixed in firmware at **`10%`** (`PWM 26`) to stay within the XIAO ESP32C6 `3V3` power budget.
 
-See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus details, and 3.3V power calculations, [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) for Matter endpoints, commissioning, and Home Assistant behavior, and [ESPHOME_REQUIREMENTS.md](ESPHOME_REQUIREMENTS.md) for the planned ESPHome implementation.
+See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus details, and 3.3V power calculations, [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) for Matter endpoints, commissioning, and Home Assistant behavior, and [ESPHOME_REQUIREMENTS.md](ESPHOME_REQUIREMENTS.md) for the ESPHome implementation.
 
 ---
 
-## Build & Flash (Arduino IDE)
+## Option A: Matter Firmware (Arduino IDE)
 
 1. **ESP32 Core (v3.x+):** In **Tools → Board → Boards Manager**, install **`esp32` by Espressif Systems** (`v3.x` or newer).
 2. **Library:** In **Tools → Manage Libraries**, install **`DFRobot_RGBButton`**.
@@ -46,3 +46,14 @@ See [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md) for wiring, I2C bus d
    - **Solid White (`10%`):** Online, waiting for initial color sync from Home Assistant (reports `Off` to Matter on boot so HA automations can trigger on reconnect)
    - **Solid RGB (`10%`):** Online and synced with Home Assistant
 3. **Add/Remove Buttons (Factory Reset):** Hold the XIAO's onboard **`BOOT` button (`GPIO9`)**—or short the **`BOOT` (`GPIO9`) and `GND` pads/pins underneath the board**—for **5 seconds** until all buttons flash **Purple 3x** (or remove the device in Home Assistant and reboot). The board will clear its saved button mask and re-scan the I2C bus.
+
+---
+
+## Option B: ESPHome Firmware (ESP-IDF)
+
+1. **Adoptable / Factory Build (USB-C Improv Serial):**
+   - Flash [`esphome/milieu-panel.yaml`](esphome/milieu-panel.yaml) over USB-C with ESPHome (`esphome run esphome/milieu-panel.yaml`), then provision Wi-Fi over wired USB-C via **Improv Serial** (no open SoftAP or unencrypted BLE Wi-Fi provisioning).
+   - Adopt the node in **ESPHome Builder** via `dashboard_import` to assign a unique per-device Noise API encryption key and OTA password.
+2. **Compile-Time Encrypted Build (`secrets.yaml`):**
+   - Copy [`esphome/secrets.yaml.example`](esphome/secrets.yaml.example) to `esphome/secrets.yaml`, fill in your Wi-Fi, 32-byte base64 Noise API key, and OTA password, and flash [`esphome/milieu-panel-private.yaml`](esphome/milieu-panel-private.yaml) (`esphome run esphome/milieu-panel-private.yaml`).
+3. **Status LEDs & Factory Reset:** Matches the Matter LED states (Blinking Blue = waiting for Improv Wi-Fi; Blinking Red = offline; Solid White = online waiting for first HA light sync; Amber = OTA update; Purple 3x on `5 s` `BOOT` hold/short = clears NVS `btn_mask` and stored Wi-Fi/Improv credentials).

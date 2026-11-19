@@ -1,0 +1,131 @@
+# Shared hardware, I2C, and 8-button entity definitions for Milieu Panel.
+# Included by esphome/milieu-panel.yaml and esphome/milieu-panel-private.yaml.
+
+esp32:
+  board: seeed_xiao_esp32c6
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [milieu_panel]
+
+logger:
+  baud_rate: 115200
+
+i2c:
+  - id: bus_i2c
+    sda: GPIO22
+    scl: GPIO23
+    frequency: 100kHz
+    timeout: 10ms
+    scan: true
+
+milieu_panel:
+  id: milieu_hub
+  i2c_id: bus_i2c
+  max_brightness: 10%
+  external_antenna: false
+
+event:
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 1
+    name: "Button 1"
+    device_class: button
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 2
+    name: "Button 2"
+    device_class: button
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 3
+    name: "Button 3"
+    device_class: button
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 4
+    name: "Button 4"
+    device_class: button
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 5
+    name: "Button 5"
+    device_class: button
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 6
+    name: "Button 6"
+    device_class: button
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 7
+    name: "Button 7"
+    device_class: button
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 8
+    name: "Button 8"
+    device_class: button
+
+light:
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 1
+    name: "Button 1 Light"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 2
+    name: "Button 2 Light"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 3
+    name: "Button 3 Light"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 4
+    name: "Button 4 Light"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 5
+    name: "Button 5 Light"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 6
+    name: "Button 6 Light"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 7
+    name: "Button 7 Light"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+  - platform: milieu_panel
+    milieu_panel_id: milieu_hub
+    slot: 8
+    name: "Button 8 Light"
+    restore_mode: ALWAYS_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0

@@ -1,8 +1,8 @@
 # ESPHOME REQUIREMENTS
 
-ESPHome-over-Wi-Fi node architecture, external component design, wired provisioning/security model, and Home Assistant behavior for **Milieu Panel** *(planned second implementation alongside the Matter firmware)*.
+ESPHome-over-Wi-Fi node architecture, external component design, wired provisioning/security model, and Home Assistant behavior for **Milieu Panel**.
 
-For wiring, DIP switch addresses, I2C bus details, and the 3.3V power budget, see [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md). For the existing Matter implementation, see [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md).
+For wiring, DIP switch addresses, I2C bus details, and the 3.3V power budget, see [HARDWARE_SPECIFICATION.md](HARDWARE_SPECIFICATION.md). For the Matter implementation, see [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md).
 
 ## Scope
 * **Native ESPHome device (1–8 buttons):** Auto-discovers 1 to 8 physical I2C RGB buttons (`0x23`–`0x2A`) and exposes each as an ESPHome `event` entity (`Button i`) and `light` entity (`Button i Light`).
@@ -54,9 +54,11 @@ Each `Button i Light` uses `ColorMode::RGB` with `restore_mode: ALWAYS_OFF`.
 
 ## Software & Architecture
 * **Framework & Target:** ESPHome with `esp-idf` framework targeting `seeed_xiao_esp32c6` (`GPIO22` SDA, `GPIO23` SCL at `100 kHz`, `GPIO3 = LOW` RF switch enable, `GPIO14 = LOW` internal ceramic antenna by default with YAML option for external U.FL).
-* **Planned Repository Layout:**
-  * [`esphome/milieu-panel.yaml`](esphome/milieu-panel.yaml) — Main ESPHome configuration (`esp-idf`, `i2c`, `api`, `ota`, `improv_serial`, `dashboard_import`, and `milieu_panel` hub).
-  * [`esphome/secrets.yaml.example`](esphome/secrets.yaml.example) — Optional template for compile-time Wi-Fi, Noise API key, and OTA password.
+* **Repository Layout:**
+  * [`esphome/milieu-panel.yaml`](esphome/milieu-panel.yaml) — Factory/adoptable ESPHome configuration (`improv_serial`, `dashboard_import`, `api`, `ota`).
+  * [`esphome/milieu-panel-private.yaml`](esphome/milieu-panel-private.yaml) — Optional compile-time encrypted configuration using `secrets.yaml` for Wi-Fi, Noise API key, and OTA password.
+  * [`esphome/packages/milieu-panel-base.yaml`](esphome/packages/milieu-panel-base.yaml) — Shared `esp-idf`, `i2c`, `milieu_panel`, `event`, and `light` definitions.
+  * [`esphome/secrets.yaml.example`](esphome/secrets.yaml.example) — Template for compile-time Wi-Fi, Noise API key, and OTA password.
   * [`esphome/components/milieu_panel/`](esphome/components/milieu_panel/) — Custom ESPHome external C++ component implementing non-blocking `DFR0991` direct I2C register access, NVS `btn_mask` persistence, `event` + `light` entities, status/OTA LED state machine, and `5 s` `BOOT` reset.
 
 ## Acceptance Criteria
