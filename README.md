@@ -11,13 +11,16 @@
 [<img src="docs/img/two_buttons_sample.jpg" alt="Alt text" width="270" height="480">](https://www.youtube.com/shorts/2WVCOeiRdfo)
 [View short video](https://www.youtube.com/shorts/2WVCOeiRdfo)
 
-## Tech Details:
+## Supported Events
 
-**ESPHome** or **Matter-over-Wi-Fi** multi-button RGB controller for Home Assistant.
+Works with **ESPHome** or **Matter-over-Wi-Fi** in Home Assistant. Each button exposes a `Button i` (`event`) entity and a `Button i Light` (`light`, On/Off + RGB + brightness) entity.
 
-Choose either firmware stack—both share the same hardware wiring and expose two labeled entities per auto-discovered button:
-- **`Button 1`–`Button 8` (`event` entity):** Emits `initial_press`, `short_release`, `long_press`, and `long_release` events.
-- **`Button 1 Light`–`Button 8 Light` (`light` entity):** Controls each button's On/Off state, RGB color, and `0–100%` brightness (scaled linearly onto a compile-time `max_brightness` cap).
+| Event | Trigger |
+|-------|---------|
+| `initial_press` | Button pressed (`50 ms` debounce) |
+| `short_release` | Released before `1 s` |
+| `long_press` | Held for `≥ 1 s` |
+| `long_release` | Released after a long press |
 
 ---
 
