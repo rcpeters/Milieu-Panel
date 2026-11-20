@@ -56,7 +56,9 @@ See [FIRMWARE.md](FIRMWARE.md) for flashing, provisioning, LED status codes, and
 
 ## Firmware Development Requirments
 
-Requirments used to build firmware:
+Requirments used to build the firmware:
 
 - [ESPHOME_REQUIREMENTS.md](ESPHOME_REQUIREMENTS.md) — ESPHome specification
 - [MATTER_REQUIREMENTS.md](MATTER_REQUIREMENTS.md) — Matter specification
+
+We'll want to make sure to keep the requirments updated and always synced with any software changes.
